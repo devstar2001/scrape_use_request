@@ -15,9 +15,21 @@ import random
 import pandas as pd
 import zipfile
 from multiprocessing.pool import ThreadPool
+import logging
 
 
-def getFisrtHTMLByReq(data):
+# -------input values ---------
+proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
+thread_count = 2
+time_period = 60 * 1
+start_date = '01-01-1989'
+end_date = '12-01-1989'
+saveDir = './playground'
+log_location = './logs'
+# ----------------------------
+
+
+def getFisrtHTMLByReq(data, logger):
 	global session
 	while True:
 		try:
@@ -25,11 +37,12 @@ def getFisrtHTMLByReq(data):
 			firstPage = session.post(URL, data=data)
 			break
 		except Exception as e:
-			print("--------- Failed. page number : 1")
-			print(str(e))
-			time.sleep(60 * 1)
-			print("========= Restarting request. page number : 1")
-			print(str(e))
+			# print("--------- Failed. page number : 1")
+			logger.critical("--------- Failed. page number : 1")
+			logger.critical(str(e))
+			time.sleep(time_period)
+			# print("========= Restarting request. page number : 1")
+			logger.critical("========= Restarting request. page number : 1")
 
 	return firstPage
 
@@ -37,15 +50,19 @@ def getFisrtHTMLByReq(data):
 # %%
 # With proxies
 def getOtherHTMLByReq(param, page_index):
+	global logger
 	while True:
 		try:
 			r = session.post(URL, params=param, proxies=proxies)
 			break
 		except Exception as e:
-			print("--------- Failed. page number : " + str(page_index))
-			print(str(e))
-			time.sleep(60*1)
-			print("========= Restarting request. page number : " + str(page_index))
+			logger.critical("--------- Failed. page number : " + str(page_index))
+			# print("--------- Failed. page number : " + str(page_index))
+			# print(str(e))
+			logger.critical(str(e))
+			time.sleep(time_period)
+			# print("========= Restarting request. page number : " + str(page_index))
+			logger.critical("========= Restarting request. page number : " + str(page_index))
 
 	return r
 
@@ -118,6 +135,7 @@ def parseContent(soup):
 
 
 def getPageContent(page_index):
+	global logger
 	a = time.time()
 	topdoc = str(11 * page_index)
 	param['p_action'] = 'list'
@@ -127,8 +145,9 @@ def getPageContent(page_index):
 	soup = parseHTML(page_raw.text)
 	page_content_list = parseContent(soup)
 	df_new = pd.DataFrame(page_content_list, columns=columns)
-	print("page number " + str(page_index + 1) + " of " + str(page_counts) + ": success \n")
-	print("~~~~~ " + str(time.time() - a))
+	logger.info("page number " + str(page_index + 1) + " of " + str(page_counts) + ": success ")
+	# print("page number " + str(page_index + 1) + " of " + str(page_counts) + ": success \n")
+	# print("~~~~~ " + str(time.time() - a))
 	return df_new
 
 
@@ -146,7 +165,32 @@ def getBetweenDay(begin_date, end_date):
 
 
 # %%
-# os.chdir('/Users/philine/Dropbox/newslibrary_project/playground')
+def create_logger(log_location, today_date, show_logs=True):
+	logger = logging.getLogger(today_date)
+	logger.setLevel(logging.DEBUG)
+	if not os.path.exists(log_location):
+		os.makedirs(log_location)
+	log_file = "{0}{1}{2}{3}".format(log_location,
+									 os.path.sep,
+									 today_date,
+									 '.log')
+
+	file_handler = logging.FileHandler(log_file)
+	# file_handler.setLevel(logging.DEBUG)
+	extra = {"today_date": today_date}
+	logger_formatter = logging.Formatter(
+		'%(levelname)s [%(asctime)s] [%(today_date)s]  %(message)s',
+		datefmt='%Y-%m-%d %H:%M:%S')
+	file_handler.setFormatter(logger_formatter)
+	logger.addHandler(file_handler)
+	if show_logs is True:
+		console_handler = logging.StreamHandler()
+		console_handler.setLevel(logging.DEBUG)
+		console_handler.setFormatter(logger_formatter)
+		logger.addHandler(console_handler)
+	logger = logging.LoggerAdapter(logger, extra)
+	return logger
+
 # %%
 # With proxies
 
@@ -155,10 +199,8 @@ def getBetweenDay(begin_date, end_date):
 # Define dates which should be scraped
 # today_date = datetime.datetime.now().strftime("%m-%d-%Y")
 
-proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
-today_date = '01-01-1989'
 
-saveDir = './playground'
+dates = getBetweenDay(start_date, end_date)
 if not os.path.exists(saveDir):
 	os.mkdir(saveDir)
 os.chdir(saveDir)
@@ -173,23 +215,25 @@ data = {"s_siteloc": "NL2", "p_queryname": "4000", "p_action": "search", "p_prod
 		'p_params_YMD_date-0': "date:B,E", "p_field_YMD_date-3": "YMD_date", 'p_params_YMD_date-3': 'date:B,E',
 		'Search.x': '42', "Search.y": '11'}
 param = {'p_action': 'list', 'p_topdoc': '11', 'd_sources': 'location'}
-dates = getBetweenDay('01-01-1989', '01-02-1989')
-thread_count = 2
-time_period = 60 * 1
+
+
 session = ''
 for today_date in dates:
-	print("**** Started. Date : " + today_date)
+	logger = create_logger(log_location, today_date)
+	# print("**** Started. Date : " + today_date)
+	logger.info("**** Started. Date : " + today_date)
 	data['p_text_YMD_date-0'] = str(today_date)
 	columns = ['office', 'date', 'author', 'words', 'paragraph']
 	while True:
-		firstPage = getFisrtHTMLByReq(data)
+		firstPage = getFisrtHTMLByReq(data, logger)
 		RESULTS_LIST = []
 
 		soup1 = parseHTML(firstPage.text)
 		page_counts = getpage_counts(soup1)
 		first_page_content_list = parseContent(soup1)
 		df = pd.DataFrame(first_page_content_list, columns=columns)
-		print("page number 1 of " + str(page_counts) + ": success \n")
+		# print("page number 1 of " + str(page_counts) + ": success \n")
+		logger.info("page number 1 of " + str(page_counts) + ": success")
 		page_number_list = list(range(1, page_counts))
 		# page_number_list = list(range(1, 25))
 
@@ -200,5 +244,6 @@ for today_date in dates:
 			df = pd.concat([df, RESULTS], ignore_index=True)
 		csv_filename = './' + str(today_date) + '.csv'
 		df.to_csv(csv_filename, index=False)
-		print(str(today_date) + ": all success!")
+		# print(str(today_date) + ": all success!")
+		logger.info(str(today_date) + ": all success!")
 		break

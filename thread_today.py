@@ -16,6 +16,13 @@ import pandas as pd
 import zipfile
 from multiprocessing.pool import ThreadPool
 import logging
+# --- input values ---
+proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
+thread_count = 2
+time_period = 60 * 1
+saveDir = './playground'
+log_location = './logs'
+#---------------------
 
 
 def getFisrtHTMLByReq(data, logger):
@@ -153,7 +160,6 @@ def getBetweenDay(begin_date, end_date):
 	return date_list
 
 
-
 def create_logger(log_location, today_date, show_logs=True):
 	logger = logging.getLogger(today_date)
 	logger.setLevel(logging.DEBUG)
@@ -190,9 +196,7 @@ def create_logger(log_location, today_date, show_logs=True):
 # %%
 # Define dates which should be scraped
 today_date = datetime.datetime.now().strftime("%m-%d-%Y")
-proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
-saveDir = './playground'
-log_location = './logs'
+
 if not os.path.exists(saveDir):
 	os.mkdir(saveDir)
 os.chdir(saveDir)
@@ -207,8 +211,7 @@ data = {"s_siteloc": "NL2", "p_queryname": "4000", "p_action": "search", "p_prod
 		'p_params_YMD_date-0': "date:B,E", "p_field_YMD_date-3": "YMD_date", 'p_params_YMD_date-3': 'date:B,E',
 		'Search.x': '42', "Search.y": '11'}
 param = {'p_action': 'list', 'p_topdoc': '11', 'd_sources': 'location'}
-thread_count = 2
-time_period = 60 * 1
+
 session = ''
 logger = create_logger(log_location, today_date)
 

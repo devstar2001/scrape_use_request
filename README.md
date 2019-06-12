@@ -1,5 +1,4 @@
-"# scrape_use_request"
- 
+
 ## Basic Setting Values 
 
         thread_count = 2            # thread count

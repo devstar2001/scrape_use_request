@@ -22,3 +22,9 @@
         It operates as multi-thread method about today's articles.
         If internet disconnected then it wait for time_period , request again about that page.
         It record all states. 
+        It can be excuted forever.
+        e.g, scrape once every two hours
+            While True:
+                .....
+                logger.info(str(today_date) + ": all success!")
+                time.sleep(60*60*2) 

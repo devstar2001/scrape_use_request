@@ -241,4 +241,4 @@ while True:
 	df.to_csv(csv_filename, index=False)
 	# print(str(today_date) + ": all success!")
 	logger.info(str(today_date) + ": all success!")
-	break
+	time.sleep(60*60*2)

@@ -1,10 +1,8 @@
 # %%
-import urllib.request
+
 import requests
-import webbrowser
 from bs4 import BeautifulSoup
-from joblib import Parallel, delayed
-import multiprocessing
+
 import re
 import sys
 import json
@@ -13,13 +11,12 @@ import time
 import os
 import random
 import pandas as pd
-import zipfile
 from multiprocessing.pool import ThreadPool
 import logging
 # --- input values ---
 proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
 thread_count = 2
-time_period = 60 * 1
+time_period = 60 * 60 * 1
 saveDir = './playground'
 log_location = './logs'
 #---------------------

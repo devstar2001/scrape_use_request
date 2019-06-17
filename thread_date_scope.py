@@ -19,7 +19,7 @@ import logging
 # -------input values ---------
 proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
 thread_count = 2
-time_period = 60 * 1
+network_repeat_time = 60 * 60 * 1
 start_date = '01-01-1989'
 end_date = '12-01-1989'
 saveDir = './playground'
@@ -38,7 +38,7 @@ def getFisrtHTMLByReq(data, logger):
 			# print("--------- Failed. page number : 1")
 			logger.critical("--------- Failed. page number : 1")
 			logger.critical(str(e))
-			time.sleep(time_period)
+			time.sleep(network_repeat_time)
 			# print("========= Restarting request. page number : 1")
 			logger.critical("========= Restarting request. page number : 1")
 
@@ -58,7 +58,7 @@ def getOtherHTMLByReq(param, page_index):
 			# print("--------- Failed. page number : " + str(page_index))
 			# print(str(e))
 			logger.critical(str(e))
-			time.sleep(time_period)
+			time.sleep(network_repeat_time)
 			# print("========= Restarting request. page number : " + str(page_index))
 			logger.critical("========= Restarting request. page number : " + str(page_index))
 

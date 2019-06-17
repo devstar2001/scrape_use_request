@@ -16,7 +16,8 @@ import logging
 # --- input values ---
 proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
 thread_count = 2
-time_period = 60 * 60 * 1
+today_repeat_time = 60 * 60 * 8
+network_repeat_time = 60 * 60 * 2
 saveDir = './playground'
 log_location = './logs'
 #---------------------
@@ -33,7 +34,7 @@ def getFisrtHTMLByReq(data, logger):
 			# print("--------- Failed. page number : 1")
 			logger.critical("--------- Failed. page number : 1")
 			logger.critical(str(e))
-			time.sleep(time_period)
+			time.sleep(network_repeat_time)
 			# print("========= Restarting request. page number : 1")
 			logger.critical("========= Restarting request. page number : 1")
 
@@ -53,7 +54,7 @@ def getOtherHTMLByReq(param, page_index):
 			# print("--------- Failed. page number : " + str(page_index))
 			# print(str(e))
 			logger.critical(str(e))
-			time.sleep(time_period)
+			time.sleep(network_repeat_time)
 			# print("========= Restarting request. page number : " + str(page_index))
 			logger.critical("========= Restarting request. page number : " + str(page_index))
 
@@ -191,8 +192,7 @@ def create_logger(log_location, today_date, show_logs=True):
 
 
 # %%
-# Define dates which should be scraped
-today_date = datetime.datetime.now().strftime("%m-%d-%Y")
+
 
 if not os.path.exists(saveDir):
 	os.mkdir(saveDir)
@@ -210,13 +210,16 @@ data = {"s_siteloc": "NL2", "p_queryname": "4000", "p_action": "search", "p_prod
 param = {'p_action': 'list', 'p_topdoc': '11', 'd_sources': 'location'}
 
 session = ''
-logger = create_logger(log_location, today_date)
 
-# print("**** Started. Date : " + today_date)
-logger.info("**** Started. Date : " + today_date)
-data['p_text_YMD_date-0'] = str(today_date)
 columns = ['office', 'date', 'author', 'words', 'paragraph']
 while True:
+	# Define dates which should be scraped
+	today_date = datetime.datetime.now().strftime("%m-%d-%Y")
+	logger = create_logger(log_location, today_date)
+
+	# print("**** Started. Date : " + today_date)
+	logger.info("**** Started. Date : " + today_date)
+	data['p_text_YMD_date-0'] = str(today_date)
 	firstPage = getFisrtHTMLByReq(data, logger)
 	RESULTS_LIST = []
 
@@ -238,4 +241,4 @@ while True:
 	df.to_csv(csv_filename, index=False)
 	# print(str(today_date) + ": all success!")
 	logger.info(str(today_date) + ": all success!")
-	time.sleep(60*60*2)
+	time.sleep(today_repeat_time)

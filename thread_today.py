@@ -14,7 +14,7 @@ import pandas as pd
 from multiprocessing.pool import ThreadPool
 import logging
 # --- input values ---
-proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
+# proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
 thread_count = 2
 today_repeat_time = 60 * 60 * 8
 network_repeat_time = 60 * 60 * 2
@@ -47,7 +47,8 @@ def getOtherHTMLByReq(param, page_index):
 	global logger
 	while True:
 		try:
-			r = session.post(URL, params=param, proxies=proxies)
+			# r = session.post(URL, params=param, proxies=proxies)
+			r = session.post(URL, params=param)
 			break
 		except Exception as e:
 			logger.critical("--------- Failed. page number : " + str(page_index))
@@ -72,19 +73,18 @@ def parseHTML(html):
 
 # %%
 def getpage_counts(soup):
-	# start = time.time()
-	docsNum = soup.find('span', {"class": "basic-text-white"}).get_text()
-	result = docsNum.split(' ')
-	resultNumber = int(result[-1])
-	# e.g. 168 docs, 16.8 = 17 pages, no = 161
-	# result = xx docs, page_counts: real pages number - 1,
-	# result[-1]/10 = 16.8, page_counts=16
-	# 30 and 35 have differences
-	if (resultNumber % 10 == 0):
-		page_counts = int(resultNumber / 10 - 1)
+	ele_docsNum = soup.find('span', {"class": "basic-text-white"})
+	if ele_docsNum:
+		docsNum = ele_docsNum.get_text()
+		result = docsNum.split(' ')
+		resultNumber = int(result[-1])
+		if (resultNumber % 10 == 0):
+			page_counts = int(resultNumber / 10 - 1)
+		else:
+			page_counts = int(resultNumber / 10)
+		return page_counts
 	else:
-		page_counts = int(resultNumber / 10)
-	return page_counts
+		return 0
 
 
 # %%
@@ -217,7 +217,7 @@ session = ''
 columns = ['office', 'date', 'author', 'words', 'paragraph']
 while True:
 	# Define dates which should be scraped
-	today_date = datetime.datetime.now().strftime("%m-%d-%Y")
+	today_date = datetime.datetime.now().strftime("%Y-%m-%d")
 	logger = create_logger(log_location, today_date)
 
 	# print("**** Started. Date : " + today_date)
@@ -228,6 +228,9 @@ while True:
 
 	soup1 = parseHTML(firstPage.text)
 	page_counts = getpage_counts(soup1)
+	if page_counts == 0:
+		time.sleep(60 * 30)
+		continue
 	first_page_content_list = parseContent(soup1)
 	df = pd.DataFrame(first_page_content_list, columns=columns)
 	# print("page number 1 of " + str(page_counts) + ": success \n")

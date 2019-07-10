@@ -141,7 +141,10 @@ def parseContent(soup):
     counter = 0
     for txt in text[1::2]:
         words = re.findall(r'of\s\d*\swords', txt.get_text())
-        wordsNum = re.findall(r'\d*', words[0])
+        if words is None:
+            wordsNum = 0
+        else:
+            wordsNum = re.findall(r'\d*', words[0])
         para = re.compile(r'\.\.+\D+\w+\D+').sub('', txt.get_text())
         temp = contents[counter]
         temp.append(wordsNum[3])
@@ -260,4 +263,4 @@ for today_date in dates:
         logger.info(str(today_date) + ": all success!")
         break
 
-# In[ ]:
+

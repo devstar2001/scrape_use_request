@@ -1,15 +1,14 @@
-# %%
+
 
 import requests
 from bs4 import BeautifulSoup
 
 import re
-import sys
-import json
+
 import datetime
 import time
 import os
-import random
+
 import pandas as pd
 from multiprocessing.pool import ThreadPool
 import logging

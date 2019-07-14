@@ -16,11 +16,11 @@ import logging
 # proxies = {'http': 'http://95.211.175.167:13151/', 'http': 'http://95.211.175.225:13151/'}
 # proxies = {'http': 'http://108.59.14.200:13152/'}
 thread_count = 2
-wd = '/home/ubuntu/scrape_use_request/'
-os.chdir(wd)
+# wd = '/home/ubuntu/scrape_use_request/'
+# os.chdir(wd)
 time_period = 60 * 1
-start_date = '07-25-2006'
-end_date = '12-31-2006'
+start_date = '08-14-2008'
+end_date = '12-31-2008'
 saveDir = './playground'
 log_location = './logs'
 
@@ -129,13 +129,14 @@ def parseContent(soup):
     counter = 0
     for txt in text[1::2]:
         words = re.findall(r'of\s\d*\swords', txt.get_text())
-        if words is None:
-            wordsNum = 0
-        else:
-            wordsNum = re.findall(r'\d*', words[0])
+
         para = re.compile(r'\.\.+\D+\w+\D+').sub('', txt.get_text())
         temp = contents[counter]
-        temp.append(wordsNum[3])
+        if words is None or words == []:
+            temp.append(0)
+        else:
+            wordsNum = re.findall(r'\d*', words[0])
+            temp.append(wordsNum[3])
         temp.append(para)
         counter += 1
     return contents

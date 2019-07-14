@@ -125,6 +125,8 @@ def parseContent(soup):
 			temp.append(0)
 		else:
 			wordsNum = re.findall(r'\d*', words[0])
+			if wordsNum is None or wordsNum == []:
+				temp.append(0)
 			temp.append(wordsNum[3])
 		temp.append(para)
 		counter += 1

@@ -16,20 +16,25 @@
 
         It operates as multi-thread method over date scope.
         If internet disconnected then it wait for time_period , request again about that page.
-        It record all states. 
+        It records all states. 
         
 ### - thread_today.py
 
         It operates as multi-thread method about today's articles.
         If internet disconnected then it wait for time_period , request again about that page.
-        It record all states. 
+        It records all states. 
         It can be excuted forever.
         e.g, scrape once every two hours
             While True:
                 .....
                 logger.info(str(today_date) + ": all success!")
                 time.sleep(60*60*2)
-                
+### - date_scope.py
+        
+        It is not multi-threading method, one thread.
+        It scrapes all pages over date scope. 
+        
+                        
 # Running script on AWS EC2
 
 ## Create Ubuntu EC2 Instance

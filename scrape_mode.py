@@ -27,6 +27,17 @@ log_location = './logs'
 
 # In[3]:
 
+def create_folders():
+    if not os.path.exists('all'):
+        os.mkdir('all')
+    if not os.path.exists('cleaned'):
+        os.mkdir('cleaned')
+    if not os.path.exists('db'):
+        os.mkdir('db')
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    if not os.path.exists('old'):
+        os.mkdir('old')
 
 def getFisrtHTMLByReq(data, logger):
     global session
@@ -211,6 +222,7 @@ dates = getBetweenDay(start_date, end_date)
 if not os.path.exists(saveDir):
     os.mkdir(saveDir)
 os.chdir(saveDir)
+create_folders()
 URL = 'https://nl.newsbank.com/nl-search/we/Archives'
 data = {"s_siteloc": "NL2", "p_queryname": "4000", "p_action": "search", "p_product": "NewsLibrary",
         "p_theme": "newslibrary2", "s_search_type": "customized", "d_sources": "location",

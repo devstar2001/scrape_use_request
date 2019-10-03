@@ -19,8 +19,8 @@ thread_count = 2
 # wd = '/home/ubuntu/scrape_use_request/'
 # os.chdir(wd)
 time_period = 60 * 1
-start_date = '06-13-2006'
-end_date = '06-20-2006'
+start_date = '06-01-2005'
+end_date = '12-31-2005'
 saveDir = './playground'
 log_location = './logs'
 
@@ -272,8 +272,8 @@ for today_date in dates:
         first_page_content_list = parseContent(soup1)
         df = pd.DataFrame(first_page_content_list, columns=columns)
         logger.info("page number 1 of " + str(page_counts) + ": success")
-        page_number_list = list(range(1, 5))
-        # page_number_list = list(range(1, page_counts))
+        # page_number_list = list(range(1, 5))
+        page_number_list = list(range(1, page_counts))
 
         # with ThreadPool(thread_count) as my_thread_pool:
         #     RESULTS_LIST = my_thread_pool.map(getPageContent, page_number_list)

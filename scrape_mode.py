@@ -276,14 +276,14 @@ for today_date in dates:
         # page_number_list = list(range(1, 5))
         page_number_list = list(range(1, page_counts))
 
-        # with ThreadPool(thread_count) as my_thread_pool:
-        #     RESULTS_LIST = my_thread_pool.map(getPageContent, page_number_list)
-        # for RESULTS in RESULTS_LIST:
-        #     df = pd.concat([df, RESULTS], ignore_index=True)
+        with ThreadPool(thread_count) as my_thread_pool:
+            RESULTS_LIST = my_thread_pool.map(getPageContent, page_number_list)
+        for RESULTS in RESULTS_LIST:
+            df = pd.concat([df, RESULTS], ignore_index=True)
 
-        for pageNum in page_number_list:
-            results_onepage = getPageContent(pageNum)
-            df = df.append(results_onepage, ignore_index=True)
+        # for pageNum in page_number_list:
+        #     results_onepage = getPageContent(pageNum)
+        #     df = df.append(results_onepage, ignore_index=True)
 
         csv_filename = './' + str(today_date) + '.csv'
         df.to_csv(csv_filename, index=False)

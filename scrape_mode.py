@@ -7,8 +7,9 @@ import datetime
 import time
 import os
 import pandas as pd
-# from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import ThreadPool
 import logging
+
 # In[2]:
 
 
@@ -18,8 +19,8 @@ thread_count = 2
 # wd = '/home/ubuntu/scrape_use_request/'
 # os.chdir(wd)
 time_period = 60 * 1
-start_date = '07-25-2006'
-end_date = '12-31-2006'
+start_date = '06-13-2006'
+end_date = '06-20-2006'
 saveDir = './playground'
 log_location = './logs'
 
@@ -103,7 +104,11 @@ def parseContent(soup):
 
     contents = []
     for txt in text[::2]:
-        office = re.compile(r'-.*\s*.*').sub('', txt.get_text())
+        raw_t = txt.get_text()
+        if not '-' in raw_t:
+            print(raw_t)
+        office = re.compile(r'(.+)\s-\s').search(raw_t).group(1)
+        # office = re.compile(r'-.*\s*.*').sub('', txt.get_text())
         # Why is temp defined already here
         temp = re.compile(r'^.*-\s').sub('', txt.get_text())
         date_raw = re.compile(r'\n\w.*').sub('', temp).strip()
@@ -111,7 +116,8 @@ def parseContent(soup):
             date, date2 = date_raw.split('\n', 1)
         except:
             date = date_raw
-        author = re.compile(r'.*\n').sub('', txt.get_text())
+        author = raw_t.split(date)[1]
+        # author = re.compile(r'.*\n').sub('', txt.get_text())
 
         # New: clean the strings (e.g., eliminate \n and \t)
         office = ''.join(c for c in office if c not in "\n'\t")
@@ -146,12 +152,12 @@ def parseContent(soup):
 
 def getPageContent(page_index):
     global logger
-    a = time.time()
+
     topdoc = str(11 * page_index)
-    param['p_action'] = 'list'
-    param['p_topdoc'] = topdoc
-    param['d_sources'] = 'location'
-    page_raw = getOtherHTMLByReq(param, page_index)
+    data['p_action'] = 'list'
+    data['p_topdoc'] = topdoc
+    data['d_sources'] = 'location'
+    page_raw = getOtherHTMLByReq(data, page_index)
     soup = parseHTML(page_raw.text)
     page_content_list = parseContent(soup)
     df_new = pd.DataFrame(page_content_list, columns=columns)
@@ -215,13 +221,32 @@ data = {"s_siteloc": "NL2", "p_queryname": "4000", "p_action": "search", "p_prod
         'p_field_base-2': '', 'p_text_YMD_date-0': "01-01-2005", 'p_field_YMD_date-0': 'YMD_date',
         'p_params_YMD_date-0': "date:B,E", "p_field_YMD_date-3": "YMD_date", 'p_params_YMD_date-3': 'date:B,E',
         'Search.x': '42', "Search.y": '11'}
-param = {'p_action': 'list', 'p_topdoc': '11', 'd_sources': 'location'}
+# param = {'p_action': 'list', 'p_topdoc': '11', 'd_sources': 'location'}
 
 session = ''
+import sqlite3
+from sqlite3 import Error
+def create_connection(db_file):
+    """ create a database connection to a SQLite database """
+    conn = None
+    try:
+        conn = sqlite3.connect(db_file)
+        print(sqlite3.version)
+    except Error as e:
+        print(e)
+    finally:
+        if conn:
+            conn.close()
+
+db_location = 'db/' + start_date[-4:] + ".sqlite"
+create_connection(db_location)
+
+conn = sqlite3.connect(db_location)
 for today_date in dates:
     logger = create_logger(log_location, today_date)
     logger.info("**** Started. Date : " + today_date)
     data['p_text_YMD_date-0'] = str(today_date)
+    table_name = 'date_' + str(today_date)
     columns = ['office', 'date', 'author', 'words', 'paragraph']
     while True:
         firstPage = getFisrtHTMLByReq(data, logger)
@@ -235,7 +260,8 @@ for today_date in dates:
         first_page_content_list = parseContent(soup1)
         df = pd.DataFrame(first_page_content_list, columns=columns)
         logger.info("page number 1 of " + str(page_counts) + ": success")
-        page_number_list = list(range(1, page_counts))
+        page_number_list = list(range(1, 5))
+        # page_number_list = list(range(1, page_counts))
 
         # with ThreadPool(thread_count) as my_thread_pool:
         #     RESULTS_LIST = my_thread_pool.map(getPageContent, page_number_list)
@@ -248,7 +274,10 @@ for today_date in dates:
 
         csv_filename = './' + str(today_date) + '.csv'
         df.to_csv(csv_filename, index=False)
+        df.to_sql(table_name, conn, if_exists="replace")
         logger.info(str(today_date) + ": all success!")
         break
 
-# In[ ]:
+conn.close()
+
+

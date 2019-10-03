@@ -266,6 +266,7 @@ for today_date in dates:
 
         soup1 = parseHTML(firstPage.text)
         page_counts = getpage_counts(soup1)
+        print("page counts", str(page_counts))
         if page_counts == 0:
             time.sleep(60 * 30)
             continue
